@@ -97,7 +97,7 @@ if __name__ == '__main__':
     parser.add_argument("gap", type=str,
                     help="TRUE iff use global average pooling layer. Otherwise, use linear layer.")
     parser.add_argument("lr_scheduler", type=str,
-                    help="patience, warmup, step.")
+                    help="patience, step.")
     
     parser.add_argument("latent_size", type=int,
                     help="Dimension of embeddings.")
@@ -280,13 +280,8 @@ if __name__ == '__main__':
 
     criterion = nn.CrossEntropyLoss(reduction='none')   
     
-    if args.lr_scheduler == 'warmup':
-        warmup_optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr = args.lr * (1 / (10**5)), weight_decay = 2/(10**4))
-        warmup_scheduler = torch.optim.lr_scheduler.StepLR(warmup_optimizer, 1, gamma=10)
-        final_optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr = args.lr, weight_decay = 2/(10**4))
-        final_scheduler = torch.optim.lr_scheduler.MultiStepLR(final_optimizer, [60, 80])
-        
-    elif args.lr_scheduler == 'step':
+       
+    if args.lr_scheduler == 'step':
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
         
@@ -319,40 +314,17 @@ if __name__ == '__main__':
         train_correct = 0.0
         
         actual_lr = None
-        if args.lr_scheduler == 'warmup':
-            if epoch <= 4:
-                for param_group in warmup_optimizer.param_groups:
-                    curr_lr = param_group['lr']
-                    if actual_lr is None:
-                        actual_lr = curr_lr
-                    else:
-                        if curr_lr != actual_lr:
-                            raise ValueError("some param groups have different lr")
-                logging.info("Learning rate: " + str(actual_lr))
+        for param_group in optimizer.param_groups:
+            curr_lr = param_group['lr']
+            if actual_lr is None:
+                actual_lr = curr_lr
             else:
-                for param_group in final_optimizer.param_groups:
-                    curr_lr = param_group['lr']
-                    if actual_lr is None:
-                        actual_lr = curr_lr
-                    else:
-                        if curr_lr != actual_lr:
-                            raise ValueError("some param groups have different lr")
-                logging.info("Learning rate: " + str(actual_lr))
-                
-        elif args.lr_scheduler == 'patience':
-            for param_group in optimizer.param_groups:
-                curr_lr = param_group['lr']
-                if actual_lr is None:
-                    actual_lr = curr_lr
-                else:
-                    if curr_lr != actual_lr:
-                        raise ValueError("some param groups have different lr")
-            logging.info("Learning rate: " + str(actual_lr))
-            if actual_lr < 10 ** (-7):
-                last_lr = True
-                
-        else:
-            logging.info("Learning rate: " + str(scheduler.get_last_lr()))
+                if curr_lr != actual_lr:
+                    raise ValueError("some param groups have different lr")
+        logging.info("Learning rate: " + str(actual_lr))
+        if actual_lr < 10 ** (-7):
+            last_lr = True
+
             
 
         for i, data in enumerate(train_loader, 0):
@@ -387,15 +359,7 @@ if __name__ == '__main__':
             
             loss.backward()
             
-            if args.lr_scheduler == 'warmup':
-               
-                if epoch <= 4:
-                    warmup_optimizer.step()
-                else:
-                    final_optimizer.step()
-                
-            else:
-                optimizer.step()
+            optimizer.step()
 
             # update loss for this epoch
             running_loss += loss.item()
@@ -418,12 +382,7 @@ if __name__ == '__main__':
         used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb, args.divide)
         
         # Adjust learning rate
-        if args.lr_scheduler == 'warmup':
-            if epoch <= 4:
-                warmup_scheduler.step()
-            else:
-                final_scheduler.step()  
-        elif args.lr_scheduler == 'patience':
+        if args.lr_scheduler == 'patience':
             scheduler.step(used_running_loss)
         elif args.lr_scheduler == 'step':
             scheduler.step()
