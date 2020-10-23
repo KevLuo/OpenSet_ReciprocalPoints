@@ -1,5 +1,5 @@
 # OpenSet_ReciprocalPoints
-Open-source, re-implementation of the published ECCV '20 paper on reciprocal points for open-set recognition.
+Open-source, re-implementation of the published ECCV '20 paper on reciprocal points for open-set recognition. This paper is state-of-the-art in open-set recognition as of October 2020.
 
 Code cleanup in progress. Shall be finished soon.
 
