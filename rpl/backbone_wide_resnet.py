@@ -47,12 +47,11 @@ class wide_basic(nn.Module):
 
 
 class wide_encoder(nn.Module):
-    def __init__(self, latent_size, depth, widen_factor, dropout_rate, num_classes=2, num_rp_per_cls=8, spec_dropout_rate=0):
+    def __init__(self, latent_size, depth, widen_factor, dropout_rate, num_classes=2, num_rp_per_cls=8):
         super(self.__class__, self).__init__()
         self.latent_size=latent_size
         self.num_classes = num_classes
         self.num_rp_per_cls = num_rp_per_cls
-        self.spec_dropout_rate = spec_dropout_rate
         
         self.reciprocal_points = nn.Parameter(torch.zeros((self.num_classes * self.num_rp_per_cls, self.latent_size)))
         nn.init.normal_(self.reciprocal_points)
@@ -80,10 +79,6 @@ class wide_encoder(nn.Module):
         self.layer2 = self._wide_layer(wide_basic, nStages[2], n, dropout_rate, stride=2)
         self.layer3 = self._wide_layer(wide_basic, nStages[3], n, dropout_rate, stride=2)
         self.bn1 = nn.BatchNorm2d(nStages[3], momentum=0.9)
-        
-        if self.spec_dropout_rate > 0:
-            self.dropout_layer = nn.Dropout(p=self.spec_dropout_rate)
-            print("model using dropout of " + str(self.spec_dropout_rate))
             
     def _wide_layer(self, block, planes, num_blocks, dropout_rate, stride):
         strides = [stride] + [1]*(int(num_blocks)-1)
@@ -104,18 +99,13 @@ class wide_encoder(nn.Module):
         features = F.avg_pool2d(out, 8)
         features = features.view(features.size(0), -1)
             
-        if self.spec_dropout_rate > 0:
-            outputs = self.dropout_layer(features)
-        else:
-            outputs = features
-            
         # ensures returned features are already L2-normalized
         small_eps = torch.full((x.shape[0], 1), 0.000001).cuda()
         features = features / (torch.norm(features, p=2, dim=1, keepdim=True) + small_eps)
         
         if resnet_features:
-            return outputs, features
+            return features, features
         else:
-            return outputs
+            return features
 
     

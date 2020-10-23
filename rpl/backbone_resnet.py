@@ -6,13 +6,12 @@ from torch.utils.data import DataLoader
 
 
 class encoder(nn.Module):
-    def __init__(self, backbone, backbone_output_size, latent_size=100, num_classes=2, num_rp_per_cls=8, dropout_rate=0, gap=False):
+    def __init__(self, backbone, backbone_output_size, latent_size=100, num_classes=2, num_rp_per_cls=8, gap=False):
         super(self.__class__, self).__init__()
         self.num_classes = num_classes
         self.num_rp_per_cls = num_rp_per_cls
         self.latent_size = latent_size
         self.backbone_output_size = backbone_output_size
-        self.dropout_rate = dropout_rate
         self.gap = gap
         
         if self.gap:
@@ -31,10 +30,6 @@ class encoder(nn.Module):
         if not self.gap:
             self.out = nn.Linear(self.backbone_output_size, self.latent_size)
         
-        if self.dropout_rate > 0:
-            self.dropout_layer = nn.Dropout(p=self.dropout_rate)
-            print("model using dropout of " + str(self.dropout_rate))
-        
     def forward(self, inputs, resnet_features='None'):
         assert type(resnet_features) is str
         
@@ -42,15 +37,10 @@ class encoder(nn.Module):
         img_features = self.features(inputs)
         img_features = torch.flatten(img_features, start_dim=1)
         
-        if self.dropout_rate > 0:
-            ready_img_features = self.dropout_layer(img_features)
-        else:
-            ready_img_features = img_features
-        
         if self.gap:
-            embeddings = ready_img_features         
+            embeddings = img_features         
         else:
-            embeddings = self.out(ready_img_features)
+            embeddings = self.out(img_features)
     
         if resnet_features == 'None':
             return embeddings

@@ -23,7 +23,7 @@ from zsh.baseline.cifar_dataset import CIFARDataset
 from zsh.baseline.dataset import StandardDataset
 from zsh.rpl.backbone import encoder32
 from zsh.rpl.backbone_resnet import encoder
-from zsh.penalties import compute_pairwise_norm_loss, compute_rpl_loss, compute_uniform_loss
+from penalties import compute_rpl_loss
 from zsh.rpl.backbone_wide_resnet import wide_encoder
 from prettytable import PrettyTable
 
@@ -41,7 +41,7 @@ def count_parameters(model):
     return total_params
 
 
-def evaluate_val(model, val_loader, gamma, lamb, l1, l1_weight, l2, l2_weight, desired_features, divide):
+def evaluate_val(model, val_loader, gamma, lamb, desired_features, divide):
 
     with torch.no_grad():
         running_loss = 0.0
@@ -52,18 +52,9 @@ def evaluate_val(model, val_loader, gamma, lamb, l1, l1_weight, l2, l2_weight, d
         normal_running_loss = 0.
         used_running_loss = 0.
         val_rpl_loss = 0.
-        val_norm_loss = 0.
-        num_norm_comps = 0.
         
         logging.info("beginning validation")
-        
-        if l1 == 'TRUE':
-            p=1
-            norm_weight = l1_weight
-        elif l2 == 'TRUE':
-            p=2
-            norm_weight = l2_weight
-        
+
         
         for i, data in enumerate(val_loader, 0):
             
@@ -82,15 +73,7 @@ def evaluate_val(model, val_loader, gamma, lamb, l1, l1_weight, l2, l2_weight, d
             # Compute RPL loss
             loss, open_loss, closed_loss, logits = compute_rpl_loss(model, outputs, labels, criterion, lamb, gamma, divide == 'TRUE')
             val_rpl_loss += loss.item()
-            
-            # Compute pairwise norm loss if desired
-            if l1 == 'TRUE' or l2 == 'TRUE':
-                norm_penalty, normalized_raw_penalty, raw_norm_penalty, batch_num_norm_comps, num_extra = compute_pairwise_norm_loss(features, labels, batch_mask, p, norm_weight, args.batch_size)
-                val_norm_loss += raw_norm_penalty.item()
-                # track the number of pairwise L1 comparisons using combinations formula
-                num_norm_comps += batch_num_norm_comps
-                loss = loss + norm_penalty
-    
+
             probs = torch.softmax(logits, dim=1)
             max_probs, max_indices = torch.max(probs, 1)
             
@@ -101,9 +84,6 @@ def evaluate_val(model, val_loader, gamma, lamb, l1, l1_weight, l2, l2_weight, d
         used_val_acc = used_correct/(used_total)
         logging.info("Used Validation Accuracy is : " + str(used_val_acc))
         logging.info("Used Average validation loss is: " + str(used_running_loss/used_total))
-        if l1 == 'TRUE' or l2 == 'TRUE':
-            logging.info("Average validation rpl loss is: " + str(val_rpl_loss/used_total))
-            logging.info("Average validation " +  str(p) + "-norm loss per comparison: " + str(val_norm_loss/num_norm_comps))
         logging.info("finished validation")
     
         return used_running_loss, used_val_acc
@@ -136,18 +116,6 @@ if __name__ == '__main__':
     parser.add_argument("divide", type=str,
                     help="TRUE or FALSE, as to whether or not to divide loss by latent_size for convergence.")
     
-    parser.add_argument("l1", type=str,
-                    help="TRUE or FALSE, as to whether or not to use L1 loss.")
-    parser.add_argument("l1_weight", type=float,
-                    help="if l1=FALSE, place 0.")
-    
-    parser.add_argument("l2", type=str,
-                    help="TRUE or FALSE, as to whether or not to use L2 loss.")
-    parser.add_argument("l2_weight", type=float,
-                    help="if l1=FALSE, place 0.")
-
-    parser.add_argument("dropout_rate", type=float,
-                    help="if dropout=FALSE, place 0.")
     
     parser.add_argument("dataset", type=str,
                         help="CIFAR_PLUS, TINY, or IMAGENET, or LT")
@@ -184,11 +152,11 @@ if __name__ == '__main__':
 
         
     if args.msg == 'NONE':
-        CKPT_BASE_NAME = 'pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_df_' + args.desired_features + '_L1_' + args.l1 + '_L1wt_' + str(args.l1_weight) + '_L2_' + args.l2 + '_L2wt_' + str(args.l2_weight) + '_droprate_' + str(args.dropout_rate) + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type 
+        CKPT_BASE_NAME = 'pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_df_' + args.desired_features + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type 
         LOGFILE_NAME = CKPT_BASE_NAME + '_logfile'
     
     else:
-        CKPT_BASE_NAME = args.msg + '_pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_df_' + args.desired_features + '_L1_' + args.l1 + '_L1wt_' + str(args.l1_weight) + '_L2_' + args.l2 + '_L2wt_' + str(args.l2_weight) + '_droprate_' + str(args.dropout_rate) + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type  
+        CKPT_BASE_NAME = args.msg + '_pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_df_' + args.desired_features + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type  
         LOGFILE_NAME = CKPT_BASE_NAME + '_logfile'
     
     if args.debug == 'DEBUG':
@@ -341,21 +309,6 @@ if __name__ == '__main__':
     best_used_running_loss = 100000000
     best_val_acc = 0.
     
-    
-    if args.l1 == 'TRUE' or args.l2 == 'TRUE':
-        batch_mask = torch.zeros((args.batch_size, args.batch_size))
-        for col in range(0, batch_mask.shape[1]):
-            for row in range(col + 1, batch_mask.shape[0]):
-                batch_mask[row, col] = 1.0
-        batch_mask = batch_mask.byte()
-        
-    if args.l1 == 'TRUE':
-        p=1
-        norm_weight = args.l1_weight
-    elif args.l2 == 'TRUE':
-        p=2
-        norm_weight = args.l2_weight
-    
 
     last_lr = False
     last_patience_counter = 0
@@ -440,16 +393,6 @@ if __name__ == '__main__':
             loss, open_loss, closed_loss, logits = compute_rpl_loss(model, outputs, labels, criterion, args.lamb, args.gamma, args.divide == 'TRUE')
             train_rpl_loss += loss.item()
             
-            # Compute pairwise norm loss if desired
-            if args.l1 == 'TRUE' or args.l2 == 'TRUE':
-                norm_penalty, normalized_raw_penalty, raw_norm_penalty, batch_num_norm_comps, num_extra = compute_pairwise_norm_loss(features, labels, batch_mask, p, norm_weight, args.batch_size)
-                train_norm_loss += raw_norm_penalty.item()
-                # track the number of pairwise L1 comparisons using combinations formula
-                train_num_norm_comps += batch_num_norm_comps
-                
-                loss = loss + norm_penalty
-                
-            
             loss.backward()
             
             if args.lr_scheduler == 'warmup':
@@ -473,22 +416,14 @@ if __name__ == '__main__':
             if args.debug == 'DEBUG':
                 print("batch loss: " + str(loss.item()))
                 print("rpl loss: " + str((closed_loss + open_loss).item()))
-                if args.l1 == 'TRUE' or args.l2 == 'TRUE':
-                    print(str(p) + "-norm loss: " + str(norm_penalty.item()))
-                    print('average ' + str(p) + '-norm loss per comp: ' + str(normalized_raw_penalty.item()))
-                    print("num extra to zero out same: " + str(num_extra))
                 print("number correct: " + str(torch.sum(max_indices == labels).item()))
 
         train_acc = train_correct/train_n
         logging.info("Training Accuracy is: " + str(train_acc))
-        # print statistics for this epoch
         logging.info("Average overall training loss in epoch is: " + str(running_loss/train_n))
-        if args.l1 == 'TRUE' or args.l2 == 'TRUE':
-            logging.info("Average rpl loss in epoch is: " + str(train_rpl_loss/train_n))
-            logging.info("Average training " + str(p) + "-norm loss per comparison in epoch is: " + str(train_norm_loss/train_num_norm_comps))
 
         model.eval()
-        used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb, args.l1, args.l1_weight, args.l2, args.l2_weight, args.desired_features, args.divide)
+        used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb args.desired_features, args.divide)
         
         # Adjust learning rate
         if args.lr_scheduler == 'warmup':

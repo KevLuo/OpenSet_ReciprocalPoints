@@ -42,9 +42,6 @@ if __name__ == '__main__':
     parser.add_argument("gamma", type=float,
                     help="")
     
-    parser.add_argument("dropout_rate", type=float,
-                    help="if dropout=FALSE, place 0.")
-    
     parser.add_argument("backbone_type", type=str,
                     help="architecture of backbone")
     parser.add_argument("img_size", type=int,

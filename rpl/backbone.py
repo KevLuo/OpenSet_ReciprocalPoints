@@ -6,12 +6,11 @@ from torch.utils.data import DataLoader
 
 
 class encoder32(nn.Module):
-    def __init__(self, latent_size=100, num_classes=2, num_rp_per_cls=8, dropout_rate=0, gap=False):
+    def __init__(self, latent_size=100, num_classes=2, num_rp_per_cls=8, gap=False):
         super(self.__class__, self).__init__()
         self.num_classes = num_classes
         self.num_rp_per_cls = num_rp_per_cls
         self.latent_size = latent_size
-        self.dropout_rate = dropout_rate
         self.gap = gap
         
         if self.gap:
@@ -25,15 +24,6 @@ class encoder32(nn.Module):
         self.reciprocal_points = nn.Parameter(torch.zeros((self.num_classes * self.num_rp_per_cls, self.latent_size)))
         nn.init.normal_(self.reciprocal_points)
         self.R = nn.Parameter(torch.zeros((self.num_classes, )))
-        # nn.init.normal_(self.R)
-        # classidx_to_rp[class_idx] returns a beg_idx, end_idx such that reciprocal_points[beg_idx, end_idx] are the
-        # reciprocal points of class class_idx.
-        self.classidx_to_rpidx = {}
-        curr = 0
-        # the end idx is exclusive
-        for i in range(0, self.num_classes):
-            self.classidx_to_rpidx[i] = (curr, curr + self.num_rp_per_cls)
-            curr += self.num_rp_per_cls
 
         self.conv1 = nn.Conv2d(3,       64,     3, 1, 1, bias=False)
         self.conv2 = nn.Conv2d(64,      64,     3, 1, 1, bias=False)
@@ -69,10 +59,7 @@ class encoder32(nn.Module):
         self.dr2 = nn.Dropout2d(0.2)
         self.dr3 = nn.Dropout2d(0.2)
         self.dr4 = nn.Dropout2d(0.2)
-        
-        if self.dropout_rate > 0:
-            self.dropout_layer = nn.Dropout(p=self.dropout_rate)
-            print("model using dropout of " + str(self.dropout_rate))
+
 
     def forward(self, x, backbone_features='None'):
         batch_size = x.shape[0]
@@ -149,8 +136,6 @@ class encoder32(nn.Module):
     def forward_linear(self, x):
         """ Call this method if encoder has linear layer on top. """
         x = x.view(x.shape[0], -1)
-        if self.dropout_rate > 0:
-            x = self.dropout_layer(x)
         x = self.fc1(x)
         return x
     
