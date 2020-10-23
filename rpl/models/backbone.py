@@ -61,7 +61,7 @@ class encoder32(nn.Module):
         self.dr4 = nn.Dropout2d(0.2)
 
 
-    def forward(self, x, backbone_features='None'):
+    def forward(self, x):
         batch_size = x.shape[0]
 
         x = self.dr1(x)
@@ -103,27 +103,12 @@ class encoder32(nn.Module):
         x = nn.LeakyReLU(0.2)(x)
         
         if self.gap:
-            embeddings = self.forward_gap(x)
-           
+            embeddings = self.forward_gap(x)  
         else:
             embeddings =  self.forward_linear(x)
             
-        if backbone_features == 'None':
-            return embeddings
-            
-        else: 
-            # select the right features
-            if backbone_features == 'last':
-                features = embeddings
-            elif backbone_features == '2_to_last':
-                features = x.view(x.shape[0], -1)
-            else:
-                raise ValueError("Currently not supported as a desired feature type")  
-            
-            # return the L2-normalized features
-            small_eps = torch.full((features.shape[0], 1), 0.000001).cuda()
-            features = features / (torch.norm(features, p=2, dim=1, keepdim=True) + small_eps)
-            return embeddings, features
+        return embeddings
+             
         
     def forward_gap(self, x):
         """ Call this method if encoder has global average pooling on top. """

@@ -24,7 +24,7 @@ from zsh.baseline.dataset import StandardDataset
 from zsh.rpl.backbone import encoder32
 from zsh.rpl.backbone_resnet import encoder
 from penalties import compute_rpl_loss
-from zsh.rpl.backbone_wide_resnet import wide_encoder
+from backbone_wide_resnet import wide_encoder
 from prettytable import PrettyTable
 
 
@@ -41,7 +41,7 @@ def count_parameters(model):
     return total_params
 
 
-def evaluate_val(model, val_loader, gamma, lamb, desired_features, divide):
+def evaluate_val(model, val_loader, gamma, lamb, divide):
 
     with torch.no_grad():
         running_loss = 0.0
@@ -64,12 +64,9 @@ def evaluate_val(model, val_loader, gamma, lamb, desired_features, divide):
             
             labels = data['label']
             labels = labels.cuda()
-            
-            if desired_features == 'None':
-                outputs = model.forward(img)
-            else:
-                outputs, features = model.forward(img, desired_features)
-            
+
+            outputs = model.forward(img)
+   
             # Compute RPL loss
             loss, open_loss, closed_loss, logits = compute_rpl_loss(model, outputs, labels, criterion, lamb, gamma, divide == 'TRUE')
             val_rpl_loss += loss.item()
@@ -99,8 +96,6 @@ if __name__ == '__main__':
     
     parser.add_argument("gap", type=str,
                     help="TRUE iff use global average pooling layer. Otherwise, use linear layer.")
-    parser.add_argument("desired_features", type=str,
-                    help="None means no features desired. Other examples include last, 2_to_last.")
     parser.add_argument("lr_scheduler", type=str,
                     help="patience, warmup, step.")
     
@@ -383,11 +378,8 @@ if __name__ == '__main__':
             else:
                 optimizer.zero_grad()
 
-            # forward + backward + optimize
-            if args.desired_features == 'None':
-                outputs = model.forward(img)
-            else:
-                outputs, features = model.forward(img, args.desired_features)
+            outputs = model.forward(img)
+
             
             # Compute RPL loss
             loss, open_loss, closed_loss, logits = compute_rpl_loss(model, outputs, labels, criterion, args.lamb, args.gamma, args.divide == 'TRUE')
@@ -423,7 +415,7 @@ if __name__ == '__main__':
         logging.info("Average overall training loss in epoch is: " + str(running_loss/train_n))
 
         model.eval()
-        used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb args.desired_features, args.divide)
+        used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb, args.divide)
         
         # Adjust learning rate
         if args.lr_scheduler == 'warmup':

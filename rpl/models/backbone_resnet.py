@@ -30,7 +30,7 @@ class encoder(nn.Module):
         if not self.gap:
             self.out = nn.Linear(self.backbone_output_size, self.latent_size)
         
-    def forward(self, inputs, resnet_features='None'):
+    def forward(self, inputs):
         assert type(resnet_features) is str
         
         # put images through ResNet backbone
@@ -42,38 +42,7 @@ class encoder(nn.Module):
         else:
             embeddings = self.out(img_features)
     
-        if resnet_features == 'None':
-            return embeddings
-        else:
-            if resnet_features == 'last':
-                features = embeddings
-            elif resnet_features == '2_to_last':
-                if self.gap:
-                    raise ValueError("Using GAP, can't get second to last yet.")
-                else:
-                    features = img_features
-            else:
-                raise ValueError(resnet_features + ' is not supported.')
-            
-            # return the L2-normalized features
-            small_eps = torch.full((features.shape[0], 1), 0.000001).cuda()
-            features = features / (torch.norm(features, p=2, dim=1, keepdim=True) + small_eps)
-            return embeddings, features
-
-    def produce_embeddings(self, inputs, features_type='last'):
-        if features_type == 'last':
-            return self.forward(inputs)
-        elif features_type == '2_to_last':
-            # put images through ResNet backbone
-            img_features = self.features(inputs)
-            flattened_img_features = torch.flatten(img_features, start_dim=1)
-
-            if self.normalize:
-                small_eps = torch.full((inputs.shape[0], 1), 0.000001).cuda()
-                flattened_img_features = flattened_img_features / (torch.norm(flattened_img_features, p=2, dim=1, keepdim=True) + small_eps)
-
-            return flattened_img_features
-        else:
-            raise ValueError(features_type + ' is not supported.')
+        return embeddings
+        
 
     
