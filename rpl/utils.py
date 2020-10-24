@@ -1,6 +1,7 @@
 import os
 
 from nltk.corpus import wordnet as wn
+from prettytable import PrettyTable
 from torch.utils.data import DataLoader
 
 from dataset import StandardDataset
@@ -56,6 +57,19 @@ def calculate_img_statistics(img_list, folder_to_idx, folder_to_name, img_size):
     std = np.sqrt(variance)
     
     return mean, std
+
+
+def count_parameters(model):
+    table = PrettyTable(["Modules", "Parameters"])
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad: continue
+        param = parameter.numel()
+        table.add_row([name, param])
+        total_params+=param
+    print(table)
+    print(f"Total Trainable Params: {total_params}")
+    return total_params
 
 
 def folder_to_name(path):

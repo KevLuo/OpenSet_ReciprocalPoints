@@ -13,8 +13,8 @@ import torchvision.transforms as transforms
 
 from data_methods.image_dataset_creation import folder_to_name, name_to_folder
 from data_methods.create_hypernym_mapping import folder_to_label_idx
-from dataset import StandardDataset
-from zsh.baseline.open_dataset import OpenDataset
+from datasets.dataset import StandardDataset
+from datasets.open_dataset import OpenDataset
 from models.backbone import encoder32
 from models.backbone_resnet import encoder
 from evaluate import collect_rpl_max, seenval_baseline_thresh, unseenval_baseline_thresh

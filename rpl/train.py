@@ -18,30 +18,15 @@ from sklearn.preprocessing import normalize
 from PIL import Image
 from nltk.corpus import wordnet as wn
 import nltk
-from PIL import Image
-from zsh.baseline.cifar_dataset import CIFARDataset
-from dataset import StandardDataset
-from zsh.rpl.backbone import encoder32
-from zsh.rpl.backbone_resnet import encoder
+from datasets.cifar_dataset import CIFARDataset
+from datasets.dataset import StandardDataset
+from models.backbone import encoder32
+from models.backbone_resnet import encoder
 from penalties import compute_rpl_loss
 from backbone_wide_resnet import wide_encoder
-from prettytable import PrettyTable
 
 from evaluate import evaluate_val
-
-
-
-def count_parameters(model):
-    table = PrettyTable(["Modules", "Parameters"])
-    total_params = 0
-    for name, parameter in model.named_parameters():
-        if not parameter.requires_grad: continue
-        param = parameter.numel()
-        table.add_row([name, param])
-        total_params+=param
-    print(table)
-    print(f"Total Trainable Params: {total_params}")
-    return total_params
+from utils import count_parameters
 
 
     
