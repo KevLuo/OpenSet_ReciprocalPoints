@@ -20,7 +20,7 @@ from nltk.corpus import wordnet as wn
 import nltk
 from PIL import Image
 from zsh.baseline.cifar_dataset import CIFARDataset
-from zsh.baseline.dataset import StandardDataset
+from dataset import StandardDataset
 from zsh.rpl.backbone import encoder32
 from zsh.rpl.backbone_resnet import encoder
 from penalties import compute_rpl_loss
@@ -111,7 +111,6 @@ if __name__ == '__main__':
     parser.add_argument("divide", type=str,
                     help="TRUE or FALSE, as to whether or not to divide loss by latent_size for convergence.")
     
-    
     parser.add_argument("dataset", type=str,
                         help="CIFAR_PLUS, TINY, or IMAGENET, or LT")
     parser.add_argument("img_base_path", type=str,
@@ -147,11 +146,11 @@ if __name__ == '__main__':
 
         
     if args.msg == 'NONE':
-        CKPT_BASE_NAME = 'pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_df_' + args.desired_features + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type 
+        CKPT_BASE_NAME = 'pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type 
         LOGFILE_NAME = CKPT_BASE_NAME + '_logfile'
     
     else:
-        CKPT_BASE_NAME = args.msg + '_pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_df_' + args.desired_features + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type  
+        CKPT_BASE_NAME = args.msg + '_pat_' + str(args.patience) + '_div_' + args.divide + '_gap_' + args.gap + '_sched_' + args.lr_scheduler + '_latsize_' + str(args.latent_size) + '_numrp_' + str(args.num_rp_per_cls) + '_lambda_' + str(args.lamb) + '_gamma_' + str(args.gamma) + '_dataset_' + args.dataset_folder + '_' + str(args.lr).replace('0.','') + '_' + str(args.batch_size) + '_' + str(args.img_size) + '_' + args.backbone_type  
         LOGFILE_NAME = CKPT_BASE_NAME + '_logfile'
     
     if args.debug == 'DEBUG':
@@ -260,15 +259,15 @@ if __name__ == '__main__':
                                             ]), args.img_base_path)
 
     if args.backbone_type == 'OSCRI_encoder':
-        model = encoder32(latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, dropout_rate=args.dropout_rate, gap=args.gap == 'TRUE')
+        model = encoder32(latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, gap=args.gap == 'TRUE')
         
     elif args.backbone_type == 'wide_resnet':
-        model = wide_encoder(args.latent_size, 40, 4, 0, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, spec_dropout_rate=args.dropout_rate)
+        model = wide_encoder(args.latent_size, 40, 4, 0, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls)
         
     elif args.backbone_type == 'resnet_50':
         backbone = models.resnet50(pretrained=False)
         VISUAL_FEATURES_DIM = 2048
-        model = encoder(backbone, VISUAL_FEATURES_DIM, latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, dropout_rate=args.dropout_rate, gap=args.gap == 'TRUE')
+        model = encoder(backbone, VISUAL_FEATURES_DIM, latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, gap=args.gap == 'TRUE')
     
     else:
         raise ValueError(args.backbone_type + ' is not supported.')
@@ -340,15 +339,7 @@ if __name__ == '__main__':
             labels = labels.cuda()
             
             # zero the parameter gradients
-            if args.msg == 'warmup':
-                
-                if epoch <= 4:
-                    warmup_optimizer.zero_grad()
-                else:
-                    final_optimizer.zero_grad()
-                
-            else:
-                optimizer.zero_grad()
+            optimizer.zero_grad()
 
             outputs = model.forward(img)
 
