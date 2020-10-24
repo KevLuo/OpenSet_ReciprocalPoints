@@ -27,6 +27,9 @@ from penalties import compute_rpl_loss
 from backbone_wide_resnet import wide_encoder
 from prettytable import PrettyTable
 
+from evaluate import evaluate_val
+
+
 
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
@@ -41,51 +44,6 @@ def count_parameters(model):
     return total_params
 
 
-def evaluate_val(model, val_loader, gamma, lamb, divide):
-
-    with torch.no_grad():
-        running_loss = 0.0
-        normal_correct = 0.
-        used_correct = 0.
-        normal_total = 0.0
-        used_total = 0.0 
-        normal_running_loss = 0.
-        used_running_loss = 0.
-        val_rpl_loss = 0.
-        
-        logging.info("beginning validation")
-
-        
-        for i, data in enumerate(val_loader, 0):
-            
-            # get the inputs & combine positive and negatives together
-            img = data['image']
-            img = img.cuda()
-            
-            labels = data['label']
-            labels = labels.cuda()
-
-            outputs = model.forward(img)
-   
-            # Compute RPL loss
-            loss, open_loss, closed_loss, logits = compute_rpl_loss(model, outputs, labels, criterion, lamb, gamma, divide == 'TRUE')
-            val_rpl_loss += loss.item()
-
-            probs = torch.softmax(logits, dim=1)
-            max_probs, max_indices = torch.max(probs, 1)
-            
-            used_correct += torch.sum(max_indices == labels).item()
-            used_total += probs.shape[0]
-            used_running_loss += loss.item()
-
-        used_val_acc = used_correct/(used_total)
-        logging.info("Used Validation Accuracy is : " + str(used_val_acc))
-        logging.info("Used Average validation loss is: " + str(used_running_loss/used_total))
-        logging.info("finished validation")
-    
-        return used_running_loss, used_val_acc
-    
-    
     
 if __name__ == '__main__':
     
