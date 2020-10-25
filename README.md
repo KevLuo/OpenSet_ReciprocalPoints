@@ -1,7 +1,7 @@
 # OpenSet_ReciprocalPoints
 Open-source, re-implementation of the published ECCV '20 paper on reciprocal points for open-set recognition. This paper is state-of-the-art in open-set recognition as of October 2020.
 
-Code cleanup in progress. Shall be finished soon.
+Code cleanup in progress. Shall be finished soon. Results on test set will be updated soon.
 
 Confirmed with paper authors that this implementation is correct. Using dataloaders of the authors, the implementation actually exceeds the published performance on tiny-imagenet. Using my own dataloaders, the results are slightly below the published performance (data splits are different, so this is probably why).
 
