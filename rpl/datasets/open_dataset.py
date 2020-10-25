@@ -2,8 +2,6 @@ import torch
 from torch.utils.data import Dataset
 from PIL import Image
 
-from zsh.robust.triplet_utils import sample_pos_and_neg
-
 
 class OpenDataset(Dataset):
     

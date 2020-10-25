@@ -151,11 +151,11 @@ if __name__ == '__main__':
     model.eval()
 
     if args.dataset_type == 'VAL':
-        seen_confidence_dict, seen_features, seen_avg_norm_loss = collect_rpl_max(model, 'seen_val', seen_loader, folder_to_name, args.gamma)
-        unseen_confidence_dict, unseen_features, unseen_avg_norm_loss = collect_rpl_max(model, 'zeroshot_val', unseen_loader, folder_to_name, args.gamma)
+        seen_confidence_dict = collect_rpl_max(model, 'seen_val', seen_loader, folder_to_name, args.gamma)
+        unseen_confidence_dict = collect_rpl_max(model, 'zeroshot_val', unseen_loader, folder_to_name, args.gamma)
     else:
-        seen_confidence_dict, seen_features, seen_avg_norm_loss = collect_rpl_max(model, 'seen_test', seen_loader, folder_to_name, args.gamma)
-        unseen_confidence_dict, unseen_features, unseen_avg_norm_loss = collect_rpl_max(model, 'zeroshot_test', unseen_loader, folder_to_name, args.gamma)
+        seen_confidence_dict = collect_rpl_max(model, 'seen_test', seen_loader, folder_to_name, args.gamma)
+        unseen_confidence_dict = collect_rpl_max(model, 'zeroshot_test', unseen_loader, folder_to_name, args.gamma)
         
     recordings_folder = args.model_folder_path + args.dataset_type + '_recordings_' + model_name + '/'
     if os.path.isdir(recordings_folder):
@@ -209,8 +209,6 @@ if __name__ == '__main__':
     metrics['dist_auroc_lwnealstyle'] = dist_auroc_score
     metrics['prob_auroc_lwnealstyle'] = prob_auroc_score
     metrics['dist_OSR_CSR_AUC'] = dist_metrics['OSR_CSR_AUC']
-    metrics['seen_l1_norm_loss'] = seen_avg_norm_loss
-    metrics['unseen_l1_norm_loss'] = unseen_avg_norm_loss
     
     print("prob-AUC score: " + str(metrics['OSR_CSR_AUC']))
     print("dist-AUC score: " + str(metrics['dist_OSR_CSR_AUC']))
