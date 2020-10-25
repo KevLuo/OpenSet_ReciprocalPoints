@@ -16,17 +16,15 @@ import random
 import pickle
 from sklearn.preprocessing import normalize
 from PIL import Image
-from nltk.corpus import wordnet as wn
-import nltk
+
 from datasets.cifar_dataset import CIFARDataset
 from datasets.dataset import StandardDataset
+from evaluate import evaluate_val
 from models.backbone import encoder32
 from models.backbone_resnet import encoder
+from models.backbone_wide_resnet import wide_encoder
 from penalties import compute_rpl_loss
-from backbone_wide_resnet import wide_encoder
-
-from evaluate import evaluate_val
-from utils import count_parameters
+from utils import count_parameters, setup_logger
 
 
     
@@ -103,11 +101,8 @@ if __name__ == '__main__':
     os.mkdir(args.checkpoint_folder_path + CKPT_BASE_NAME)
     os.mkdir(args.checkpoint_folder_path + CKPT_BASE_NAME + '/' + 'backups')
     
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-
-    logging.basicConfig(level=logging.INFO, filename=args.logging_folder_path + LOGFILE_NAME, filemode="a+",
-                        format="%(asctime)-15s %(levelname)-8s %(message)s")
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    logger = setup_logger('logger', args.logging_folder_path + LOGFILE_NAME)
     
 
     if args.dataset == 'CIFAR_PLUS':
@@ -182,9 +177,9 @@ if __name__ == '__main__':
                                                  std=train_std)
         num_classes = len(closed_classes)
 
-        logging.info("Number of seen classes: " + str(num_classes))
-        logging.info("Number of training images is: " + str(len(train_data)))
-        logging.info("Number of validation images is: " + str(len(val_data)))
+        logger.info("Number of seen classes: " + str(num_classes))
+        logger.info("Number of training images is: " + str(len(train_data)))
+        logger.info("Number of validation images is: " + str(len(val_data)))
 
         dataset = StandardDataset(train_data, folder_to_idx, folder_to_name,      
                                             transforms.Compose([
@@ -218,7 +213,7 @@ if __name__ == '__main__':
     model.cuda()
     
     num_params = count_parameters(model)
-    logging.info("Number of model parameters: " + str(num_params))
+    logger.info("Number of model parameters: " + str(num_params))
 
     criterion = nn.CrossEntropyLoss(reduction='none')   
     
@@ -246,7 +241,7 @@ if __name__ == '__main__':
     last_patience_counter = 0
     for epoch in range(0, args.n_epochs):
 
-        logging.info("EPOCH " + str(epoch))
+        logger.info("EPOCH " + str(epoch))
         running_loss = 0.0
         train_frob_loss = 0.0
         train_norm_loss = 0.0
@@ -263,7 +258,7 @@ if __name__ == '__main__':
             else:
                 if curr_lr != actual_lr:
                     raise ValueError("some param groups have different lr")
-        logging.info("Learning rate: " + str(actual_lr))
+        logger.info("Learning rate: " + str(actual_lr))
         if actual_lr < 10 ** (-7):
             last_lr = True
 
@@ -309,11 +304,11 @@ if __name__ == '__main__':
                 print("number correct: " + str(torch.sum(max_indices == labels).item()))
 
         train_acc = train_correct/train_n
-        logging.info("Training Accuracy is: " + str(train_acc))
-        logging.info("Average overall training loss in epoch is: " + str(running_loss/train_n))
+        logger.info("Training Accuracy is: " + str(train_acc))
+        logger.info("Average overall training loss in epoch is: " + str(running_loss/train_n))
 
         model.eval()
-        used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb, args.divide)
+        used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb, args.divide, logger)
         
         # Adjust learning rate
         if args.lr_scheduler == 'patience':

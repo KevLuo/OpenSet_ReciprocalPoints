@@ -84,7 +84,7 @@ def collect_rpl_max(model, dataset_type, loader, folder_to_name, gamma, desired_
         return confidence_dict, features_dict, avg_norm_loss
 
 
-def evaluate_val(model, val_loader, gamma, lamb, divide):
+def evaluate_val(model, val_loader, gamma, lamb, divide, logger):
 
     with torch.no_grad():
         running_loss = 0.0
@@ -96,7 +96,7 @@ def evaluate_val(model, val_loader, gamma, lamb, divide):
         used_running_loss = 0.
         val_rpl_loss = 0.
         
-        logging.info("beginning validation")
+        logger.info("beginning validation")
 
         for i, data in enumerate(val_loader, 0):
             
@@ -121,9 +121,9 @@ def evaluate_val(model, val_loader, gamma, lamb, divide):
             used_running_loss += loss.item()
 
         used_val_acc = used_correct/(used_total)
-        logging.info("Used Validation Accuracy is : " + str(used_val_acc))
-        logging.info("Used Average validation loss is: " + str(used_running_loss/used_total))
-        logging.info("finished validation")
+        logger.info("Used Validation Accuracy is : " + str(used_val_acc))
+        logger.info("Used Average validation loss is: " + str(used_running_loss/used_total))
+        logger.info("finished validation")
     
         return used_running_loss, used_val_acc
     
