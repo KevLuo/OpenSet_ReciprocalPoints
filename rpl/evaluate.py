@@ -1,4 +1,5 @@
 import os
+import pickle
 
 import torch
 
@@ -6,55 +7,20 @@ from penalties import compute_rpl_loss
 
 
 
-
-def collect_rpl_max(model, dataset_type, loader, folder_to_name, gamma, desired_features, cifar=False, idx_to_label=None, LT=False):
+def collect_rpl_max(model, dataset_type, loader, folder_to_name, gamma, cifar=False, idx_to_label=None):
     """ Care about 1) identity of max known class 2) distance to reciprocal points of this class. """
-    
     with torch.no_grad():
-        
         confidence_dict = defaultdict(list)
-        features_dict = defaultdict(list)
-        norm_loss = 0.
-        num_norm_comps = 0.
-        
-        batch_size = 64
-        batch_mask = torch.zeros((batch_size, batch_size))
-        for col in range(0, batch_mask.shape[1]):
-            for row in range(col + 1, batch_mask.shape[0]):
-                batch_mask[row, col] = 1.0
-        batch_mask = batch_mask.byte()
-        
-        criterion = torch.nn.CrossEntropyLoss(reduction='none') 
-
-        for i, data in enumerate(loader, 0):
-            
+        for i, data in enumerate(loader, 0):   
             # get the inputs & combine positive and negatives together
             img = data['image']
             img = img.cuda()
-
             if cifar:
                 label_idx = data['label']
-            elif LT and dataset_type == 'zeroshot_test':
-                folder_names = 'open'
             else:
                 folder_names = data['folder_name']
-                   
-            if desired_features == 'None':
-                outputs = model.forward(img)   
-            else:
-                # Note that labels are used to cancel out penalty between examples of the same cls.
-                # On zeroshot data, we just make each img its own class (for simplicity)
-                if dataset_type == 'zeroshot_val' or dataset_type == 'zeroshot_test':
-                    labels = torch.arange(0, img.shape[0], dtype=torch.long)
-                else:
-                    labels = data['label']
-                
-                outputs, features = model.forward(img, desired_features)       
-                norm_penalty, normalized_raw_penalty, raw_norm_penalty, batch_num_norm_comps, num_extra = compute_pairwise_norm_loss(features, labels, batch_mask, 1, 1, batch_size)
-                norm_loss += raw_norm_penalty.item()
-                # track the number of pairwise L1 comparisons using combinations formula
-                num_norm_comps += batch_num_norm_comps
-            
+
+            outputs = model.forward(img)   
 
             logits, dist_to_rp = compute_rpl_logits(model, outputs, gamma)
             max_distances, max_indices = torch.max(logits, 1)
@@ -64,28 +30,17 @@ def collect_rpl_max(model, dataset_type, loader, folder_to_name, gamma, desired_
             for j in range(0, img.shape[0]):
                 if cifar:
                     correct_leaf = idx_to_label[label_idx[j].item()]
-                elif LT and dataset_type == 'zeroshot_test':
-                    correct_leaf = folder_names
                 else:
                     correct_leaf = folder_to_name['n' + folder_names[j]]
                 predicted_leaf_idx = max_indices[j].item()
                 dist = max_distances[j].item()
                 prob = max_probs[j].item()
                 confidence_dict[correct_leaf].append({'idx': predicted_leaf_idx, 'dist': dist, 'prob': prob})
-                if desired_features != 'None':
-                    features_dict[correct_leaf].append(features[j])
 
-        if num_norm_comps == 0:
-            avg_norm_loss = None
-        else:
-            avg_norm_loss = norm_loss/num_norm_comps
-
-        print("Average validation 1-norm loss per comparison (unweighted): " + str(avg_norm_loss))
-        return confidence_dict, features_dict, avg_norm_loss
+        return confidence_dict
 
 
 def evaluate_val(model, val_loader, gamma, lamb, divide, logger):
-
     with torch.no_grad():
         running_loss = 0.0
         normal_correct = 0.

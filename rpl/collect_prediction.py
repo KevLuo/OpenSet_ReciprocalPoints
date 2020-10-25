@@ -1,24 +1,21 @@
+import argparse
 import os
 import re
 import shutil
 
-import argparse
 import numpy as np
-import torch
 import pickle
-
+import torch
 import torchvision.models as models
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 
-from data_methods.image_dataset_creation import folder_to_name, name_to_folder
-from data_methods.create_hypernym_mapping import folder_to_label_idx
 from datasets.dataset import StandardDataset
 from datasets.open_dataset import OpenDataset
 from models.backbone import encoder32
 from models.backbone_resnet import encoder
-from evaluate import collect_rpl_max, seenval_baseline_thresh, unseenval_baseline_thresh
 from models.backbone_wide_resnet import wide_encoder
+from evaluate import collect_rpl_max, seenval_baseline_thresh, unseenval_baseline_thresh
 
 
 
@@ -32,8 +29,6 @@ if __name__ == '__main__':
                       help="e.g. VAL or TEST")
     parser.add_argument("gap", type=str,
                     help="TRUE iff use global average pooling layer. Otherwise, use linear layer.")
-    parser.add_argument("desired_features", type=str,
-                    help="None means no features desired. Other examples include last, 2_to_last.")
     
     parser.add_argument("latent_size", type=int,
                     help="Dimension of embeddings.")
@@ -86,18 +81,14 @@ if __name__ == '__main__':
     elif args.dataset_type == 'TEST':
         with open(args.dataset_folder_path + args.dataset_folder + '/closed_test_img_list.pkl', 'rb') as f:
             seen_data = pickle.load(f)
+        with open(args.dataset_folder_path + args.dataset_folder + '/open_test_img_list.pkl', 'rb') as f:
+            unseen_data = pickle.load(f)
         if args.type == 'TINY':
             with open(args.dataset_folder_path + args.dataset_folder + '/closedtest_img_to_folder.pkl', 'rb') as f:
                 seen_tiny_img2folder = pickle.load(f)  
-        if args.type == 'LT':
-            with open(args.dataset_folder_path + args.dataset_folder + '/open_img_list.pkl', 'rb') as f:
-                unseen_data = pickle.load(f)
-        else:
-            with open(args.dataset_folder_path + args.dataset_folder + '/open_test_img_list.pkl', 'rb') as f:
-                unseen_data = pickle.load(f)
-        if args.type == 'TINY':
             with open(args.dataset_folder_path + args.dataset_folder + '/opentest_img_to_folder.pkl', 'rb') as f:
-                unseen_tiny_img2folder = pickle.load(f)     
+                unseen_tiny_img2folder = pickle.load(f)  
+        
     else:
         raise Exception('Unsupported dataset type')
 
@@ -134,7 +125,7 @@ if __name__ == '__main__':
                                     transforms.Resize((args.img_size,args.img_size)),
                                     transforms.ToTensor(),
                                     img_normalize,
-                                    ]), args.img_base_path, LT=args.type=='LT')
+                                    ]), args.img_base_path)
     
         
     seen_loader = DataLoader(seen_dataset, batch_size=64, shuffle=False, num_workers=3)
@@ -143,15 +134,15 @@ if __name__ == '__main__':
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
     
     if args.backbone_type == 'OSCRI_encoder':
-        model = encoder32(latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, dropout_rate=args.dropout_rate, gap=args.gap == 'TRUE')
+        model = encoder32(latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, gap=args.gap == 'TRUE')
         
     elif args.backbone_type == 'wide_resnet':
-        model = wide_encoder(args.latent_size, 40, 4, 0, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, spec_dropout_rate=args.dropout_rate)
+        model = wide_encoder(args.latent_size, 40, 4, 0, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls)
         
     elif args.backbone_type == 'resnet_50':
         backbone = models.resnet50(pretrained=False)
         VISUAL_FEATURES_DIM = 2048
-        model = encoder(backbone, VISUAL_FEATURES_DIM, latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, dropout_rate=args.dropout_rate, gap=args.gap == 'TRUE')
+        model = encoder(backbone, VISUAL_FEATURES_DIM, latent_size=args.latent_size, num_classes=num_classes, num_rp_per_cls=args.num_rp_per_cls, gap=args.gap == 'TRUE')
     else:
         raise ValueError(args.backbone_type + ' is not supported.')
    
@@ -160,11 +151,11 @@ if __name__ == '__main__':
     model.eval()
 
     if args.dataset_type == 'VAL':
-        seen_confidence_dict, seen_features, seen_avg_norm_loss = collect_rpl_max(model, 'seen_val', seen_loader, folder_to_name, args.gamma, args.desired_features, LT=args.type == 'LT')
-        unseen_confidence_dict, unseen_features, unseen_avg_norm_loss = collect_rpl_max(model, 'zeroshot_val', unseen_loader, folder_to_name, args.gamma, args.desired_features, LT=args.type == 'LT')
+        seen_confidence_dict, seen_features, seen_avg_norm_loss = collect_rpl_max(model, 'seen_val', seen_loader, folder_to_name, args.gamma)
+        unseen_confidence_dict, unseen_features, unseen_avg_norm_loss = collect_rpl_max(model, 'zeroshot_val', unseen_loader, folder_to_name, args.gamma)
     else:
-        seen_confidence_dict, seen_features, seen_avg_norm_loss = collect_rpl_max(model, 'seen_test', seen_loader, folder_to_name, args.gamma, args.desired_features, LT=args.type == 'LT')
-        unseen_confidence_dict, unseen_features, unseen_avg_norm_loss = collect_rpl_max(model, 'zeroshot_test', unseen_loader, folder_to_name, args.gamma, args.desired_features, LT=args.type == 'LT')
+        seen_confidence_dict, seen_features, seen_avg_norm_loss = collect_rpl_max(model, 'seen_test', seen_loader, folder_to_name, args.gamma)
+        unseen_confidence_dict, unseen_features, unseen_avg_norm_loss = collect_rpl_max(model, 'zeroshot_test', unseen_loader, folder_to_name, args.gamma)
         
     recordings_folder = args.model_folder_path + args.dataset_type + '_recordings_' + model_name + '/'
     if os.path.isdir(recordings_folder):
@@ -175,19 +166,12 @@ if __name__ == '__main__':
         pickle.dump(seen_confidence_dict, f)
     with open(recordings_folder + 'unseen_confidence_dict.pkl', 'wb') as f:
         pickle.dump(unseen_confidence_dict, f)
-    if args.desired_features != 'None':
-        with open(recordings_folder + 'seen_features.pkl', 'wb') as f:
-            pickle.dump(seen_features, f)
-        with open(recordings_folder + 'unseen_features.pkl', 'wb') as f:
-            pickle.dump(unseen_features, f)
 
     metrics_folder = args.model_folder_path + 'metrics_' + args.dataset_type + '_' + str(model_name) + '/'
     if os.path.isdir(metrics_folder):
         print(metrics_folder + ' already exists. Removing existing and creating new.')
         shutil.rmtree(metrics_folder)
     os.mkdir(metrics_folder)
-    
-    
     
     prob_thresh = set()
     dist_thresh = set()
@@ -206,10 +190,6 @@ if __name__ == '__main__':
     
     print("number of prob thresholds: " + str(len(prob_thresh)))
     print("number of dist thresholds: " + str(len(dist_thresh)))
-    
-      
-#     prob_thresh = list(np.linspace(0, 0.999, 1000))
-#     prob_thresh = thresh + [0.9991, 0.9992, 0.9993, 0.9994, 0.9995, 0.99975, 0.9999, 0.99995, 0.99999, 0.999995, 0.999999, 0.9999995, 0.9999999, 0.99999995, 0.99999999, 0.999999995]
 
     prob_seen_info = seenval_baseline_thresh(seen_confidence_dict, prob_thresh, folder_to_idx=folder_to_idx, name_to_folder=name_to_folder, save_path=metrics_folder + 'probseenres.pkl')
     prob_unseen_info = unseenval_baseline_thresh(unseen_confidence_dict, prob_thresh, save_path=metrics_folder + 'probunseenres.pkl')

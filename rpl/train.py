@@ -243,9 +243,6 @@ if __name__ == '__main__':
 
         logger.info("EPOCH " + str(epoch))
         running_loss = 0.0
-        train_frob_loss = 0.0
-        train_norm_loss = 0.0
-        train_num_norm_comps = 0.0
         train_rpl_loss = 0.
         train_std_loss = 0.0
         train_correct = 0.0
@@ -261,8 +258,6 @@ if __name__ == '__main__':
         logger.info("Learning rate: " + str(actual_lr))
         if actual_lr < 10 ** (-7):
             last_lr = True
-
-            
 
         for i, data in enumerate(train_loader, 0):
             
