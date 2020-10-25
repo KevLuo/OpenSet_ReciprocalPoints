@@ -7,10 +7,10 @@ Confirmed with paper authors that this implementation is correct. Using dataload
 
 I also ran a standard deep learning baseline on both of these datasets. I actually find that the baseline has been underestimated by the current open-set literature; the current literature reports a much lower number for the baseline than the one I obtained with my own code. This may signal that the progress in open-set recognition is much more modest than it would seem.
 
-| Method | CIFAR+10 | Tiny Imagenet (validation results for now) |
+| Method | CIFAR+10 | Tiny Imagenet |
 | --- | --- | --- |
-| My implementation of baseline| 89.24% | 66.35% |
-| My implementation of RPL | 89.79% | 67.11% |
+| My implementation of baseline| 89.24% (val) | 66.35% (val) |
+| My implementation of RPL | 89.79% (val) | 67.11% (val) |
 | Published RPL | 84.2% | 68.8% |
 
 Exact data splits that were used for experiments can be found [here for tiny imagenet](https://drive.google.com/file/d/1Q_VINXM1Z7YAvNQit9TbvNt50BV-7rZR/view?usp=sharing) and [here for cifar+10](https://drive.google.com/file/d/1wtR6wXIAq9GtiBe3kbHYVm7oIlud_bc2/view?usp=sharing).
