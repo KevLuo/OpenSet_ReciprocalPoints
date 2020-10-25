@@ -3,12 +3,12 @@ Open-source, re-implementation of the published ECCV '20 paper on reciprocal poi
 
 Code cleanup in progress. Shall be finished soon.
 
-Confirmed with paper authors that this implementation is correct. Using dataloaders of the authors, the implementation actually exceeds the published performance. Using my own dataloaders, the results are slightly below the published performance (data splits are different, so this is probably why). Exact numbers coming soon.
+Confirmed with paper authors that this implementation is correct. Using dataloaders of the authors, the implementation actually exceeds the published performance on tiny-imagenet. Using my own dataloaders, the results are slightly below the published performance (data splits are different, so this is probably why). Exact numbers below:
 
-| Method | Tiny Imagenet | CIFAR+10 |
+| Method | CIFAR+10 | Tiny Imagenet |
 | --- | --- | --- |
-| My implementation of RPL | TBA | TBA |
-| Published RPL | TBA | TBA |
+| My implementation of RPL | 89.79% | 67.11% |
+| Published RPL | 84.2% | 68.8% |
 
 Exact data splits that were used for experiments can be found [here for tiny imagenet](https://drive.google.com/file/d/1Q_VINXM1Z7YAvNQit9TbvNt50BV-7rZR/view?usp=sharing) and [here for cifar+10](https://drive.google.com/file/d/1wtR6wXIAq9GtiBe3kbHYVm7oIlud_bc2/view?usp=sharing).
 
