@@ -3,10 +3,13 @@ Open-source, re-implementation of the published ECCV '20 paper on reciprocal poi
 
 Code cleanup in progress. Shall be finished soon.
 
-Confirmed with paper authors that this implementation is correct. Using dataloaders of the authors, the implementation actually exceeds the published performance on tiny-imagenet. Using my own dataloaders, the results are slightly below the published performance (data splits are different, so this is probably why). Exact numbers below:
+Confirmed with paper authors that this implementation is correct. Using dataloaders of the authors, the implementation actually exceeds the published performance on tiny-imagenet. Using my own dataloaders, the results are slightly below the published performance (data splits are different, so this is probably why).
 
-| Method | CIFAR+10 | Tiny Imagenet |
+I also ran a standard deep learning baseline on both of these datasets. I actually find that the baseline has been underestimated by the current open-set literature; the current literature reports a much lower number for the baseline than the one I obtained with my own code. This may signal that the progress in open-set recognition is much more modest than it would seem.
+
+| Method | CIFAR+10 | Tiny Imagenet (validation results for now) |
 | --- | --- | --- |
+| My implementation of baseline| 89.24% | 66.35% |
 | My implementation of RPL | 89.79% | 67.11% |
 | Published RPL | 84.2% | 68.8% |
 
