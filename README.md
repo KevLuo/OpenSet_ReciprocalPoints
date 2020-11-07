@@ -18,7 +18,7 @@ Exact data splits that were used for experiments can be found [here for tiny ima
 
 All credit for the paper goes to the authors. Paper can be found here: https://arxiv.org/abs/2011.00178.
 
-@misc{chen2020learning,
+Citation: @misc{chen2020learning,
       title={Learning Open Set Network with Discriminative Reciprocal Points}, 
       author={Guangyao Chen and Limeng Qiao and Yemin Shi and Peixi Peng and Jia Li and Tiejun Huang and Shiliang Pu and Yonghong Tian},
       year={2020},
