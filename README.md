@@ -9,6 +9,7 @@ I also ran a standard deep learning baseline on both of these datasets. I actual
 
 | Method | CIFAR+10 | Tiny Imagenet |
 | --- | --- | --- |
+| Published baseline| 81.6% | 57.7% |
 | My implementation of baseline| 89.24% (val) | 66.35% (val) |
 | My implementation of RPL | 89.79% (val) | 67.11% (val) |
 | Published RPL | 84.2% | 68.8% |
