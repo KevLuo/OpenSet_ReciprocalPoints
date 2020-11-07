@@ -16,4 +16,4 @@ I also ran a standard deep learning baseline on both of these datasets. I actual
 
 Exact data splits that were used for experiments can be found [here for tiny imagenet](https://drive.google.com/file/d/1Q_VINXM1Z7YAvNQit9TbvNt50BV-7rZR/view?usp=sharing) and [here for cifar+10](https://drive.google.com/file/d/1wtR6wXIAq9GtiBe3kbHYVm7oIlud_bc2/view?usp=sharing).
 
-All credit for the paper goes to the authors. Paper can be found here: https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123480511.pdf.
+All credit for the paper goes to the authors. Paper can be found here: https://arxiv.org/abs/2011.00178.
