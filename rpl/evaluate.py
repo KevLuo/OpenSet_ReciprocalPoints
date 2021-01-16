@@ -40,7 +40,7 @@ def collect_rpl_max(model, dataset_type, loader, folder_to_name, gamma, cifar=Fa
         return confidence_dict
 
 
-def evaluate_val(model, val_loader, gamma, lamb, divide, logger):
+def evaluate_val(model, criterion, val_loader, gamma, lamb, divide, logger):
     with torch.no_grad():
         running_loss = 0.0
         normal_correct = 0.

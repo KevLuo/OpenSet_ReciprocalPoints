@@ -102,7 +102,7 @@ if __name__ == '__main__':
     os.mkdir(args.checkpoint_folder_path + CKPT_BASE_NAME + '/' + 'backups')
     
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    logger = setup_logger('logger', args.logging_folder_path + LOGFILE_NAME)
+    logger = setup_logger('logger', formatter, args.logging_folder_path + LOGFILE_NAME)
     
 
     if args.dataset == 'CIFAR_PLUS':
@@ -303,7 +303,7 @@ if __name__ == '__main__':
         logger.info("Average overall training loss in epoch is: " + str(running_loss/train_n))
 
         model.eval()
-        used_running_loss, used_val_acc = evaluate_val(model, val_loader, args.gamma, args.lamb, args.divide, logger)
+        used_running_loss, used_val_acc = evaluate_val(model, criterion, val_loader, args.gamma, args.lamb, args.divide, logger)
         
         # Adjust learning rate
         if args.lr_scheduler == 'patience':

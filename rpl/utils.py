@@ -1,10 +1,11 @@
+import logging
 import os
 
 from nltk.corpus import wordnet as wn
 from prettytable import PrettyTable
 from torch.utils.data import DataLoader
 
-from dataset import StandardDataset
+from datasets.dataset import StandardDataset
 
 
 
@@ -102,7 +103,7 @@ def name_to_folder(path):
     return name_to_folder_map
 
 
-def setup_logger(name, log_file, level=logging.INFO):
+def setup_logger(name, formatter, log_file, level=logging.INFO):
     """To setup as many loggers as you want"""
 
     handler = logging.FileHandler(log_file)        

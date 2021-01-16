@@ -2,8 +2,6 @@ import torch
 from torch.utils.data import Dataset
 from PIL import Image
 
-from zsh.robust.triplet_utils import sample_pos_and_neg
-
 
 class StandardDataset(Dataset):
     
@@ -37,23 +35,7 @@ class StandardDataset(Dataset):
         else:
             img_folder = self.test_tiny_img2folder[img_shortcut]
             label = self.folder_to_idx[img_folder]
-            
         
-        if self.triplet_option:
-            sampled_pos_img_path, sampled_neg_img_paths = sample_pos_and_neg(label, self.num_neg, self.per_cls_imgs_dict, self.per_cls_neg_cls_dict, self.idx_to_folder, self.folder_to_name)
-            
-            sampled_pos_img = Image.open(sampled_pos_img_path).convert('RGB')
-            sampled_pos_img = self.transform(sampled_pos_img)
-                
-            sampled_neg_imgs = torch.zeros(self.num_neg, 3, 224, 224)
-            for neg_idx in range(0, len(sampled_neg_img_paths)):
-                sampled_neg_img = Image.open(sampled_neg_img_paths[neg_idx]).convert('RGB')
-                sampled_neg_img = self.transform(sampled_neg_img)
-                sampled_neg_imgs[neg_idx] = sampled_neg_img
-
-            sample = {"image": img, "label": label, "sampled_pos_img": sampled_pos_img, "sampled_neg_imgs": sampled_neg_imgs}
-        
-        else:
-            sample = {"image": img, "label": label, "folder_name": img_folder[1:]}
+        sample = {"image": img, "label": label, "folder_name": img_folder[1:]}
         
         return sample
