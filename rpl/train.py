@@ -33,24 +33,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     
     parser.add_argument("n_epochs", type=int,
-                    help="number of epochs to train")
+                    default=150, help="number of epochs to train")
     
-    parser.add_argument("gap", type=str,
-                    help="TRUE iff use global average pooling layer. Otherwise, use linear layer.")
-    parser.add_argument("lr_scheduler", type=str,
-                    help="patience, step.")
+    parser.add_argument("--gap", type=str,
+                    default='TRUE', help="TRUE iff use global average pooling layer. Otherwise, use linear layer.")
+    parser.add_argument("--lr_scheduler", type=str,
+                    default='patience', help="patience, step.")
     
     parser.add_argument("latent_size", type=int,
-                    help="Dimension of embeddings.")
+                    default=100, help="Dimension of embeddings.")
     parser.add_argument("num_rp_per_cls", type=int,
-                    help="Number of reciprocal points per class.")
+                    default=1, help="Number of reciprocal points per class.")
     parser.add_argument("lamb", type=float,
-                    help="how much to weight the open-set regularization term in objective.")
+                    default=0.1, help="how much to weight the open-set regularization term in objective.")
     parser.add_argument("gamma", type=float,
-                    help="how much to weight the probability assignment.")
+                    default=1, help="how much to weight the probability assignment.")
 
-    parser.add_argument("divide", type=str,
-                    help="TRUE or FALSE, as to whether or not to divide loss by latent_size for convergence.")
+    parser.add_argument("--divide", type=str,
+                    default='TRUE', help="TRUE or FALSE, as to whether or not to divide loss by latent_size for convergence.")
     
     parser.add_argument("dataset", type=str,
                         help="CIFAR_PLUS, TINY, or IMAGENET, or LT")
@@ -61,27 +61,27 @@ if __name__ == '__main__':
     parser.add_argument("dataset_folder", type=str,
                     help="name of folder where dataset details live.")
     
-    parser.add_argument("batch_size", type=int,
-                    help="size of a batch during training")
-    parser.add_argument("lr", type=float,
-                    help="initial learning rate during training")
-    parser.add_argument("patience", type=int,
-                    help="patience of lr scheduler")
-    parser.add_argument("img_size", type=int,
-                    help="desired square image size.")
-    parser.add_argument("num_workers", type=int,
-                    help="number of workers during training")
+    parser.add_argument("--batch_size", type=int,
+                    default=64, help="size of a batch during training")
+    parser.add_argument("--lr", type=float,
+                    default=0.01, help="initial learning rate during training")
+    parser.add_argument("--patience", type=int,
+                    default=5, help="patience of lr scheduler")
+    parser.add_argument("--img_size", type=int,
+                    default=32, help="desired square image size.")
+    parser.add_argument("--num_workers", type=int,
+                    default=3, help="number of workers during training")
     parser.add_argument("backbone_type", type=str,
-                    help="architecture of backbone")
+                    default='OSCRI_encoder', help="architecture of backbone")
     
     parser.add_argument("checkpoint_folder_path", type=str,
                     help="folder where checkpoints will be saved")
     parser.add_argument("logging_folder_path", type=str,
                     help="folder where logfile will be saved")
-    parser.add_argument("debug", type=str,
-                    help="this input is 'DEBUG' when experiment is for debugging")
-    parser.add_argument("msg", type=str,
-                    help="if none, put NONE. else, place message.")
+    parser.add_argument("--debug", type=str,
+                    default='NO_DEBUG', help="this input is 'DEBUG' when experiment is for debugging")
+    parser.add_argument("--msg", type=str,
+                    default='NONE', help="if none, put NONE. else, place message.")
 
     args = parser.parse_args()
 

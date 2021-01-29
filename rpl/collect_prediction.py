@@ -15,7 +15,7 @@ from datasets.open_dataset import OpenDataset
 from models.backbone import encoder32
 from models.backbone_resnet import encoder
 from models.backbone_wide_resnet import wide_encoder
-from evaluate import collect_rpl_max, seenval_baseline_thresh, unseenval_baseline_thresh
+from evaluate import calc_auroc, collect_rpl_max, seenval_baseline_thresh, summarize, unseenval_baseline_thresh
 
 
 
