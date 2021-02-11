@@ -32,7 +32,18 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     
-    parser.add_argument("n_epochs", type=int,
+    parser.add_argument("img_base_path", type=str,
+                    help="path to folder containing image data, i.e. /data/ or /share/nikola/export/image_datasets/")
+    parser.add_argument("dataset_folder_path", type=str,
+                    help="path to dataset folder.")
+    parser.add_argument("dataset_folder", type=str,
+                    help="name of folder where dataset details live.")
+    parser.add_argument("checkpoint_folder_path", type=str,
+                    help="folder where checkpoints will be saved")
+    parser.add_argument("logging_folder_path", type=str,
+                    help="folder where logfile will be saved")
+    
+    parser.add_argument("--n_epochs", type=int,
                     default=150, help="number of epochs to train")
     
     parser.add_argument("--gap", type=str,
@@ -40,26 +51,21 @@ if __name__ == '__main__':
     parser.add_argument("--lr_scheduler", type=str,
                     default='patience', help="patience, step.")
     
-    parser.add_argument("latent_size", type=int,
-                    default=100, help="Dimension of embeddings.")
-    parser.add_argument("num_rp_per_cls", type=int,
+    parser.add_argument("--latent_size", type=int,
+                    default=128, help="Dimension of embeddings.")
+    parser.add_argument("--num_rp_per_cls", type=int,
                     default=1, help="Number of reciprocal points per class.")
-    parser.add_argument("lamb", type=float,
+    parser.add_argument("--lamb", type=float,
                     default=0.1, help="how much to weight the open-set regularization term in objective.")
-    parser.add_argument("gamma", type=float,
+    parser.add_argument("--gamma", type=float,
                     default=1, help="how much to weight the probability assignment.")
 
     parser.add_argument("--divide", type=str,
                     default='TRUE', help="TRUE or FALSE, as to whether or not to divide loss by latent_size for convergence.")
     
-    parser.add_argument("dataset", type=str,
-                        help="CIFAR_PLUS, TINY, or IMAGENET, or LT")
-    parser.add_argument("img_base_path", type=str,
-                    help="path to folder containing image data, i.e. /data/ or /share/nikola/export/image_datasets/")
-    parser.add_argument("dataset_folder_path", type=str,
-                    help="path to dataset folder.")
-    parser.add_argument("dataset_folder", type=str,
-                    help="name of folder where dataset details live.")
+    parser.add_argument("--dataset", type=str,
+                        default='TINY', help="CIFAR_PLUS, TINY, or IMAGENET, or LT")
+    
     
     parser.add_argument("--batch_size", type=int,
                     default=64, help="size of a batch during training")
@@ -71,13 +77,9 @@ if __name__ == '__main__':
                     default=32, help="desired square image size.")
     parser.add_argument("--num_workers", type=int,
                     default=3, help="number of workers during training")
-    parser.add_argument("backbone_type", type=str,
+    parser.add_argument("--backbone_type", type=str,
                     default='OSCRI_encoder', help="architecture of backbone")
     
-    parser.add_argument("checkpoint_folder_path", type=str,
-                    help="folder where checkpoints will be saved")
-    parser.add_argument("logging_folder_path", type=str,
-                    help="folder where logfile will be saved")
     parser.add_argument("--debug", type=str,
                     default='NO_DEBUG', help="this input is 'DEBUG' when experiment is for debugging")
     parser.add_argument("--msg", type=str,
