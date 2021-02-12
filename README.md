@@ -19,7 +19,7 @@ Exact data splits that were used for experiments can be found [here for tiny ima
 The images for Tiny Imagenet can be obtained by running ```wget http://cs231n.stanford.edu/tiny-imagenet-200.zip```.
 
 ## Instructions on Installation
-The requirements.txt file describes the core requirements. A recent version of Python (i.e. Python 3.7) should work. I suggest creating a Conda virtual environment with Python 3.7 and then running '''conda install  -c conda-forge  --file requirements.txt''' to get the right packages. One additional note: this repo using wordnet from nltk for some data processing; using wordnet requires an additional step: run '''nltk.download()''' which opens a download window...select wordnet.
+The requirements.txt file describes the core requirements. A recent version of Python (i.e. Python 3.7) should work. I suggest creating a Conda virtual environment with Python 3.7 and then running ```conda install  -c conda-forge  --file requirements.txt``` to get the right packages. One additional note: this repo using wordnet from nltk for some data processing; using wordnet requires an additional step: run ```nltk.download()``` which opens a download window...select wordnet.
 
 All credit for the paper goes to the authors. Paper can be found here: https://arxiv.org/abs/2011.00178.
 
