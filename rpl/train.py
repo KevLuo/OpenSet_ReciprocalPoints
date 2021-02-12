@@ -33,15 +33,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     
     parser.add_argument("img_base_path", type=str,
-                    help="path to folder containing image data, i.e. /data/ or /share/nikola/export/image_datasets/")
+                    help="path to folder containing image data (i.e. /share/nikola/export/image_datasets/). For example, if the folder containing tiny-imagenet images is at the path /home/data/tiny_imagenet then this arg's value is /home/data/."
     parser.add_argument("dataset_folder_path", type=str,
-                    help="path to dataset folder.")
+                    help="path to folder which contains the dataset folder (the folder which has dataset splits and preprocessing details). For example, in the tiny-imagenet case, the README asks to download a folder called tiny_info; the value for this arg would be the path where this folder is located on your machine. (excluding the name of the folder)")
     parser.add_argument("dataset_folder", type=str,
-                    help="name of folder where dataset details live.")
+                    help="name of folder where dataset details live. For example, in the tiny-imagenet case this could be something like 20closed_split0_closedval10_size32. The value for this arg is the name of the folder whose path is given by the argument called dataset_folder_path.")
     parser.add_argument("checkpoint_folder_path", type=str,
-                    help="folder where checkpoints will be saved")
+                    help="path to the folder where checkpoints will be saved (including the name of the folder)")
     parser.add_argument("logging_folder_path", type=str,
-                    help="folder where logfile will be saved")
+                    help="path to the folder where logfile will be saved (including the nume of the folder)")
     
     parser.add_argument("--n_epochs", type=int,
                     default=150, help="number of epochs to train")
