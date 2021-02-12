@@ -21,6 +21,11 @@ The images for Tiny Imagenet can be obtained by running ```wget http://cs231n.st
 ## Instructions on Installation
 The requirements.txt file describes the core requirements. A recent version of Python (i.e. Python 3.7) should work. I suggest creating a Conda virtual environment with Python 3.7 and then running ```conda install  -c conda-forge  --file requirements.txt``` to get the right packages. One additional note: this repo using wordnet from nltk for some data processing; using wordnet requires an additional step: run ```nltk.download()``` which opens a download window...select wordnet.
 
+## Instructions on Training
+Many of the training args are optional with default values. Essentially all of the required args are directory paths. Here is an example training command on Tiny ImageNet:
+```python train.py  /Users/kevinluo/Data/  /Users/kevinluo/Downloads/tiny_info/  20closed_split0_closedval10_size32  /Users/kevinluo/Data/rpl/  /Users/kevinluo/Data/logfiles/rpl/```
+
+## Citations
 All credit for the paper goes to the authors. Paper can be found here: https://arxiv.org/abs/2011.00178.
 
 Citation: @misc{chen2020learning,
