@@ -23,6 +23,7 @@ The requirements.txt file describes the core requirements. A recent version of P
 
 ## Instructions on Training
 Many of the training args are optional with default values. Essentially all of the required args are directory paths. Here is an example training command on Tiny ImageNet:
+
 ```python train.py  /Users/kevinluo/Data/  /Users/kevinluo/Downloads/tiny_info/  20closed_split0_closedval10_size32  /Users/kevinluo/Data/rpl/  /Users/kevinluo/Data/logfiles/rpl/```
 
 ## Citations
